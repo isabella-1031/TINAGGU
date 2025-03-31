@@ -1,0 +1,185 @@
+/* 1) Load custom typeface */
+@font-face {
+  font-family: 'PixelatedElegance';
+  src: url('PixelatedElegance.ttf') format('truetype');
+  font-display: swap;
+}
+
+/* 2) Reset margins and paddings */
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+h1 {
+  margin: 60px 0 40px;
+  padding: 0 10px;
+  color: #ffffff;
+}
+
+/* 3) Ensure p5.js canvas displays as a block */
+canvas {
+  display: block;
+  margin: 0 auto;
+  cursor: url('CURSOR_WHITE.png') 16 16, auto;
+}
+
+body {
+  font-family: 'PixelatedElegance', sans-serif;
+  text-align: center;
+  user-select: none;
+  margin-top: 250px;
+  background: url("BLUE BACKGROUND-09.png") no-repeat center center;
+  background-size: cover;
+  cursor: url('CURSOR_WHITE.png') 16 16, auto;
+}
+
+/* 4) Main Container for Two-Column Layout */
+#mainContainer {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 5px; /* 5px gap between left column and grid */
+  margin: 0 auto;
+  width: fit-content;
+}
+
+/* 5) Left Column: Palette & Action Buttons */
+#leftContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 5px; /* 5px gap between palette and action container */
+}
+
+/* Palette styling (vertical) */
+#colorPalette {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px; /* 20px gap between each color option */
+  margin: 0;
+}
+
+.colorOption {
+  display: inline-block;
+  width: 70px;
+  height: 70px;
+  border: 2px solid transparent;
+  background-size: cover;
+  background-position: center;
+}
+
+.selected {
+  border: 2px solid #000;
+}
+
+/* 6) Action Container for Delete & Undo Buttons (in Left Column) */
+#actionContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px; /* 20px gap between delete and undo buttons */
+  margin: 0;
+}
+
+#deleteContainer,
+#undoContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#deleteButton, #undoButton {
+  width: 70px;
+  height: 70px;
+  cursor: pointer;
+}
+
+#deleteLabel, #undoLabel {
+  font-size: 1rem;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+/* 7) Canvas Container (Loom Frame) */
+#canvasContainer {
+  margin: 20px auto;
+  padding: 20px;
+  background: url('tinaggu_tinaggu.png') no-repeat center center;
+  background-size: contain;
+  border: 8px solid #f8a84d;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+/* 8) Pixel Art Grid Styling */
+#pixelCanvas {
+  border-collapse: collapse;
+  margin: 200px auto 220px;
+  width: 1080px; /* 27 columns x 40px = 1080px */
+  table-layout: fixed;
+  background: rgba(255,255,255,0.5);
+}
+
+/* 9) Each Grid Cell as a Perfect Square (40px x 40px) */
+#pixelCanvas td {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #f8a84d;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+/* Mobile Responsive Adjustments */
+@media screen and (max-width: 600px) {
+  body {
+    margin-top: 50px; /* Reduce top margin for smaller screens */
+    background-size: cover;
+  }
+  h1 {
+    font-size: 1.5rem;
+    margin: 20px 0;
+  }
+  #mainContainer {
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+  #leftContainer {
+    flex-direction: row;
+    justify-content: center;
+    gap: 5px;
+  }
+  #colorPalette {
+    flex-direction: row;
+    gap: 5px;
+    margin: 0;
+  }
+  .colorOption {
+    width: 50px;
+    height: 50px;
+  }
+  #actionContainer {
+    flex-direction: row;
+    gap: 5px;
+  }
+  #deleteButton, #undoButton {
+    width: 50px;
+    height: 50px;
+  }
+  #deleteLabel, #undoLabel {
+    font-size: 0.8rem;
+  }
+  #canvasContainer {
+    width: 100%;
+    padding: 10px;
+  }
+  #pixelCanvas {
+    width: 100%;
+    margin: 20px auto;
+  }
+  #pixelCanvas td {
+    width: 30px;
+    height: 30px;
+  }
+}

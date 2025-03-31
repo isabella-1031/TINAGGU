@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- Ensure proper scaling on mobile devices -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>“Weave the dreams from Fu Dalu”</title>
+  <!-- p5.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+  <!-- Link to external CSS -->
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Additional inline styles if needed */
+  </style>
+</head>
+<body>
+  <h1>“Weave the dreams from Fu Dalu”</h1>
+  
+  <!-- Main Container for Side-by-Side Layout -->
+  <div id="mainContainer">
+    <!-- Left Column: Color Palette & Action Buttons -->
+    <div id="leftContainer">
+      <!-- Color Palette (Vertical Alignment) -->
+      <div id="colorPalette">
+        <!-- Replace these filenames with your actual yarn image filenames -->
+        <span class="colorOption selected" data-color="#c30202" data-cursor="CURSOR_RED.png" style="background-image: url('Red Yarn.png');"></span>
+        <span class="colorOption" data-color="#180f0f" data-cursor="CURSOR_BLACK.png" style="background-image: url('Black Yarn.png');"></span>
+        <span class="colorOption" data-color="#e2ac1d" data-cursor="CURSOR_YELLOW.png" style="background-image: url('Yellow Yarn.png');"></span>
+        <span class="colorOption" data-color="#ffffff" data-cursor="CURSOR_WHITE.png" style="background-image: url('White Yarn.png');"></span>
+        <span class="colorOption" data-color="#242968" data-cursor="CURSOR_BLUE.png" style="background-image: url('Blue Yarn.png');"></span>
+      </div>
+      
+      <!-- Action Container: Delete & Undo Buttons -->
+      <div id="actionContainer">
+        <!-- Delete Button -->
+        <div id="deleteContainer">
+          <img id="deleteButton" src="delete.png" alt="Reset Drawing" />
+          <span id="deleteLabel">Delete</span>
+        </div>
+        <!-- Undo Button -->
+        <div id="undoContainer">
+          <img id="undoButton" src="undo.png" alt="Undo Action" />
+          <span id="undoLabel">Undo</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Grid Container in the Middle -->
+    <div id="canvasContainer">
+      <table id="pixelCanvas"></table>
+    </div>
+  </div>
+  
+  <!-- p5.js Sketch -->
+  <script src="sketch.js"></script>
+  
+  <!-- Pixel Art Grid Script (grid creation, events, reset & undo) -->
+  <script>
+    /***************************************************************
+     * Global Variables & Setup
+     ***************************************************************/
+    const pixelCanvas = document.getElementById("pixelCanvas");
+    const colorOptions = document.querySelectorAll(".colorOption");
+    const deleteButton = document.getElementById("deleteButton");
+    const undoButton = document.getElementById("undoButton");
+
+    /* Map each color to its corresponding texture image for drawing */
+    const textureMap = {
+      "#c30202": "RED_TEXTURE.png",
+      "#180f0f": "BLACK_TEXTURE.png",
+      "#e2ac1d": "YELLOW_TEXTURE.png",
+      "#ffffff": "WHITE_TEXTURE.png",
+      "#242968": "BLUE_TEXTURE.png"
+    };
+
+    let selectedColor = "#c30202"; // default selected color (red)
+    let isMouseDown = false;
+    let undoStack = []; // Global undo stack for cell changes
+
+    /***************************************************************
+     * Color Palette: Update Selection & Cursor
+     ***************************************************************/
+    colorOptions.forEach(option => {
+      option.addEventListener("click", () => {
+        selectedColor = option.getAttribute("data-color");
+        colorOptions.forEach(opt => opt.classList.remove("selected"));
+        option.classList.add("selected");
+        
+        const cursorFile = option.getAttribute("data-cursor");
+        console.log("Changing cursor to:", cursorFile);
+        if (cursorFile) {
+          document.body.style.cursor = `url("${cursorFile}") 16 16, auto`;
+          const canvasEl = document.querySelector("canvas");
+          if (canvasEl) {
+            canvasEl.style.cursor = `url("${cursorFile}") 16 16, auto`;
+          }
+          document.querySelectorAll("#pixelCanvas td").forEach(cell => {
+            cell.style.cursor = `url("${cursorFile}") 16 16, auto`;
+          });
+        }
+      });
+    });
+
+    /***************************************************************
+     * Delete Button: Reset the Grid on Click
+     ***************************************************************/
+    document.getElementById("deleteContainer").addEventListener("click", () => {
+      document.querySelectorAll("#pixelCanvas td").forEach(cell => {
+        cell.style.backgroundImage = "";
+      });
+      undoStack = [];
+    });
+
+    /***************************************************************
+     * Undo Button: Revert Last Action on Click
+     ***************************************************************/
+    document.getElementById("undoContainer").addEventListener("click", () => {
+      if (undoStack.length > 0) {
+        const lastAction = undoStack.pop();
+        lastAction.cell.style.backgroundImage = lastAction.previousTexture;
+      }
+    });
+
+    /***************************************************************
+     * Grid Creation (Square Cells, 1080x1600 Grid)
+     ***************************************************************/
+    // For a grid of 1080px width and 1600px height with 40px squares:
+    // Columns = 1080 / 40 = 27; Rows = 1600 / 40 = 40.
+    const columns = 27;
+    const rows = 40;  // Modify this value if you want more or fewer rows
+
+    // Clear any previous grid content:
+    pixelCanvas.innerHTML = "";
+
+    // Create the grid using separate rows and columns:
+    for (let i = 0; i < rows; i++) {
+      const rowEl = pixelCanvas.insertRow();
+      for (let j = 0; j < columns; j++) {
+        const cell = rowEl.insertCell();
+
+        /*********************
+         * Mouse Events
+         *********************/
+        cell.addEventListener("mousedown", (e) => {
+          e.preventDefault();
+          let previousTexture = cell.style.backgroundImage || "";
+          undoStack.push({ cell: cell, previousTexture: previousTexture });
+          let textureImage = textureMap[selectedColor];
+          cell.style.backgroundImage = `url('${textureImage}')`;
+          cell.style.backgroundSize = "100% 100%";
+          cell.style.backgroundRepeat = "no-repeat";
+          isMouseDown = true;
+        });
+
+        cell.addEventListener("mouseover", () => {
+          if (isMouseDown) {
+            let previousTexture = cell.style.backgroundImage || "";
+            undoStack.push({ cell: cell, previousTexture: previousTexture });
+            let textureImage = textureMap[selectedColor];
+            cell.style.backgroundImage = `url('${textureImage}')`;
+            cell.style.backgroundSize = "100% 100%";
+            cell.style.backgroundRepeat = "no-repeat";
+          }
+        });
+
+        /*********************
+         * Touch Events
+         *********************/
+        cell.addEventListener("touchstart", (e) => {
+          e.preventDefault();
+          let previousTexture = cell.style.backgroundImage || "";
+          undoStack.push({ cell: cell, previousTexture: previousTexture });
+          let textureImage = textureMap[selectedColor];
+          cell.style.backgroundImage = `url('${textureImage}')`;
+          cell.style.backgroundSize = "100% 100%";
+          cell.style.backgroundRepeat = "no-repeat";
+          isMouseDown = true;
+        });
+
+        cell.addEventListener("touchmove", (e) => {
+          e.preventDefault();
+          if (isMouseDown) {
+            let previousTexture = cell.style.backgroundImage || "";
+            undoStack.push({ cell: cell, previousTexture: previousTexture });
+            let textureImage = textureMap[selectedColor];
+            cell.style.backgroundImage = `url('${textureImage}')`;
+            cell.style.backgroundSize = "100% 100%";
+            cell.style.backgroundRepeat = "no-repeat";
+          }
+        });
+      }
+    }
+
+    /***************************************************************
+     * End Drawing on Mouse/Touch Release
+     ***************************************************************/
+    document.addEventListener("mouseup", () => { isMouseDown = false; });
+    document.addEventListener("touchend", () => { isMouseDown = false; });
+
+    /***************************************************************
+     * Key Events (Optional): If you want Enter to also Undo
+     ***************************************************************/
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        if (undoStack.length > 0) {
+          const lastAction = undoStack.pop();
+          lastAction.cell.style.backgroundImage = lastAction.previousTexture;
+        }
+      }
+    });
+  </script>
+  
+  <!-- Script: Dynamically set container size to wrap the background image -->
+  <script>
+    const canvasContainer = document.getElementById("canvasContainer");
+    const bgImage = new Image();
+    bgImage.src = 'tinaggu_tinaggu.png';
+    bgImage.onload = function() {
+      canvasContainer.style.width = bgImage.naturalWidth + 'px';
+      canvasContainer.style.height = bgImage.naturalHeight + 'px';
+    };
+  </script>
+  
+</body>
+</html>
